@@ -1,0 +1,12 @@
+server:
+  servlet:
+    context-path: /distributed-demo
+#  port: 8081
+
+spring:
+  # redis 配置
+  redis:
+    host: 192.168.102.128 
+    password: 
+#    host: 192.168.198.129
+#    password: 123456
