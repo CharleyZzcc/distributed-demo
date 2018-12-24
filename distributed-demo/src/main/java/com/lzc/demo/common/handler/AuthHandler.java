@@ -6,12 +6,12 @@
 
 package com.lzc.demo.common.handler;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.lzc.demo.common.exception.AuthEnum;
 import com.lzc.demo.common.exception.AuthException;
 
 /**
@@ -31,8 +31,12 @@ import com.lzc.demo.common.exception.AuthException;
 public class AuthHandler {
 
 	@ExceptionHandler(AuthException.class)
-//	@ResponseStatus(HttpStatus.FORBIDDEN)
-	public ModelAndView handleAuthException() {
+	public ModelAndView handleAuthException(AuthException e,
+			RedirectAttributes redirectAttributes) {
+		
+		if(AuthEnum.OFFLINE.getCode() == e.getCode()) {
+			redirectAttributes.addAttribute("msg", e.getMessage());
+		}
 		return new ModelAndView("redirect:/user/loginPage");
 	}
 }

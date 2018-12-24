@@ -24,6 +24,10 @@ public class RedisConstant {
 	
 	public static final String TOKEN = "token";
 	
+	public static final String LOGIN_USER = "login_user";
+	
+	public static final String SEPARATOR = "#";
+	
 	public static final int TIME_OUT_MINUTE = 25;
 
 }

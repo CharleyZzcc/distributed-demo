@@ -6,6 +6,8 @@
 
 package com.lzc.demo.sys.user.service;
 
+import com.lzc.demo.common.entity.User;
+
 /**
  * Description:   
  * Copyright:   Copyright (c)2018 
@@ -21,5 +23,7 @@ package com.lzc.demo.sys.user.service;
 
 public interface UserService {
 
-	boolean login(String username, String password);
+	User get(String username, String password);
+	
+	User get(String userId);
 }

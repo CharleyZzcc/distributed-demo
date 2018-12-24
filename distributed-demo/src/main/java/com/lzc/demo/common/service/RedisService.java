@@ -28,7 +28,9 @@ import lombok.extern.slf4j.Slf4j;
  * Modification History:  
  * Date         Author      Version     Description  
  * ------------------------------------------------------------------  
- * 2018-12-19   LZC         1.0         1.0 Version  
+ * 2018-12-19   LZC         1.0         新增addToken、removeToken、getToken  
+ * 2018-12-20   LZC         1.1         提供分布式锁：lock、unlock  
+ * 2018-12-24   LZC         1.2         新增addLoginUser、removeLoginUser、getLoginUser；重构token方法  
  */
 
 @Component
@@ -43,48 +45,95 @@ public class RedisService {
 
 	/**
 	* <p>描述：添加token</p>
-	* @param username
-	* @return token唯一标识
+	* @param userId
+	* @return token
 	* @author LZC
 	* @date   2018-12-19 15:50
 	 */
-	public String addToken(String username) {
-		if(StringUtils.isEmpty(username)) {
+	public String addToken(String userId) {
+		if(StringUtils.isEmpty(userId)) {
 			return null;
 		}
+		String key = RedisConstant.TOKEN + RedisConstant.SEPARATOR + userId;
 		String token = UUID.randomUUID().toString();
-		String key = RedisConstant.TOKEN + "_" + token;
-		stringRedisTemplate.opsForValue().set(key, username, RedisConstant.TIME_OUT_MINUTE, TimeUnit.MINUTES);
+		stringRedisTemplate.opsForValue().set(key, token, RedisConstant.TIME_OUT_MINUTE, TimeUnit.MINUTES);
 		
 		return token;
 	}
 	
 	/**
+	* <p>描述：添加登录用户</p>
+	* @param token
+	* @param userId
+	* @author LZC
+	* @date   2018-12-24 22:14
+	 */
+	public void addLoginUser(String token, String userId) {
+		if(StringUtils.isEmpty(token) || StringUtils.isEmpty(userId)) {
+			return;
+		}
+		String key = RedisConstant.LOGIN_USER + RedisConstant.SEPARATOR + token;
+		stringRedisTemplate.opsForValue().set(key, userId, RedisConstant.TIME_OUT_MINUTE, TimeUnit.MINUTES);
+	}
+	
+	/**
 	* <p>描述：移除token</p>
-	* @param username
+	* @param userId
 	* @author LZC
 	* @date   2018-12-19 16:26
 	 */
-	public void removeToken(String token) {
-		if(StringUtils.isEmpty(token)) {
+	public void removeToken(String userId) {
+		if(StringUtils.isEmpty(userId)) {
 			return;
 		}
-		String key = RedisConstant.TOKEN + "_" + token;
+		String key = RedisConstant.TOKEN + RedisConstant.SEPARATOR + userId;
 		stringRedisTemplate.opsForValue().getOperations().delete(key);
 	}
 	
 	/**
-	* <p>描述：</p>
+	* <p>描述：移除登录用户</p>
 	* @param token
-	* @return token关联的值
+	* @return oldLoginUser
 	* @author LZC
-	* @date   2018-12-19 16:40
+	* @date   2018-12-24 22:14
 	 */
-	public String getTokenValue(String token) {
+	public String removeLoginUser(String token) {
 		if(StringUtils.isEmpty(token)) {
 			return null;
 		}
-		String key = RedisConstant.TOKEN + "_" + token;
+		String key = RedisConstant.LOGIN_USER + RedisConstant.SEPARATOR + token;
+		String oldValue = getLoginUser(token);
+		stringRedisTemplate.opsForValue().getOperations().delete(key);
+		return oldValue;
+	}
+	
+	/**
+	* <p>描述：获取token</p>
+	* @param userId
+	* @return token
+	* @author LZC
+	* @date   2018-12-19 16:40
+	 */
+	public String getToken(String userId) {
+		if(StringUtils.isEmpty(userId)) {
+			return null;
+		}
+		String key = RedisConstant.TOKEN + RedisConstant.SEPARATOR + userId;
+		return stringRedisTemplate.opsForValue().get(key);
+	}
+	
+	/**
+	* <p>描述：获取当前登录用户的用户名</p>
+	* @param token
+	* @return userId
+	* @author LZC
+	* @date   2018-12-24 22:15
+	 */
+	public String getLoginUser(String token) {
+		if(StringUtils.isEmpty(token)) {
+			return null;
+		}
+		String key = RedisConstant.LOGIN_USER + RedisConstant.SEPARATOR + token;
 		return stringRedisTemplate.opsForValue().get(key);
 	}
 

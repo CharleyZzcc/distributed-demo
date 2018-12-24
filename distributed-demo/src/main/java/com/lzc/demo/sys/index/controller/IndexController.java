@@ -6,8 +6,6 @@
 
 package com.lzc.demo.sys.index.controller;
 
-import java.net.InetAddress;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lzc.demo.common.entity.User;
 import com.lzc.demo.common.service.RedisService;
 import com.lzc.demo.common.util.CookieUtil;
+import com.lzc.demo.sys.user.service.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,11 +41,15 @@ public class IndexController {
 	@Autowired
 	private RedisService redisService;
 	
+	@Autowired UserService userService;
+	
 	@GetMapping("/index")
 	public String index(HttpServletRequest request) {
-		String username = redisService.getTokenValue(CookieUtil.getToken(request));
-		//主要区分请求哪台服务器
-		log.info(username + "：访问首页");
-		return "欢迎访问首页，当前登录用户：" + username;
+		String token = CookieUtil.getToken(request);
+		String userId = redisService.getLoginUser(token);
+		User user = userService.get(userId);
+		//主要记录请求了哪台服务器
+		log.info(user.getUsername() + "：访问首页");
+		return "欢迎访问首页，当前登录用户：" + user.getUsername();
 	}
 }

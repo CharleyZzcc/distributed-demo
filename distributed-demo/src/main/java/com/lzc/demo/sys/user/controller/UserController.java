@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.lzc.demo.common.entity.User;
 import com.lzc.demo.common.service.RedisService;
 import com.lzc.demo.common.util.CookieUtil;
 import com.lzc.demo.sys.user.service.UserService;
@@ -32,7 +33,8 @@ import com.lzc.demo.sys.user.service.UserService;
  * Modification History:  
  * Date         Author      Version     Description  
  * ------------------------------------------------------------------  
- * 2018-12-19   LZC         1.0         1.0 Version  
+ * 2018-12-19   LZC         1.0         定义接口：loginPage、login、logout  
+ * 2018-12-24   LZC         1.1         修改login、logout  
  */
 
 @RestController
@@ -59,14 +61,17 @@ public class UserController {
 			HttpServletResponse response, RedirectAttributes redirectAttributes) {
 		
 		//查询用户是否存在
-		if(!userService.login(username, password)) {
+		User user = userService.get(username, password);
+		if(user == null) {
 			//不用response.setContentType("text/html;charset=utf-8");
 			redirectAttributes.addAttribute("msg", "用户名或密码错误");
 			return new ModelAndView("redirect:/user/loginPage");
 		}
 		
 		//设置token到redis
-		String token = redisService.addToken(username);
+		String token = redisService.addToken(user.getUserId());
+		//添加当前登录用户的用户名到redis
+		redisService.addLoginUser(token, user.getUserId());
 		
 		//设置token到cookie
 		CookieUtil.addToken(response, token);
@@ -78,8 +83,9 @@ public class UserController {
 	@ResponseBody
 	public ModelAndView logout(HttpServletRequest request, HttpServletResponse response, 
 			RedirectAttributes redirectAttributes) {
-		
-		redisService.removeToken(CookieUtil.getToken(request));
+		String token = CookieUtil.getToken(request);
+		String userId = redisService.removeLoginUser(token);
+		redisService.removeToken(userId);
 		CookieUtil.removeToken(response);
 		
 		redirectAttributes.addAttribute("msg", "注销成功");

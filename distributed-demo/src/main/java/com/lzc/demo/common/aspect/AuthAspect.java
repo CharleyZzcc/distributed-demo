@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.lzc.demo.common.exception.AuthEnum;
 import com.lzc.demo.common.exception.AuthException;
 import com.lzc.demo.common.service.RedisService;
 import com.lzc.demo.common.util.CookieUtil;
@@ -31,7 +32,8 @@ import com.lzc.demo.common.util.CookieUtil;
  * Modification History:  
  * Date         Author      Version     Description  
  * ------------------------------------------------------------------  
- * 2018-12-19   LZC         1.0         1.0 Version  
+ * 2018-12-19   LZC         1.0         定义切点authVerify和前置通知beforeAuth  
+ * 2018-12-24   LZC         1.1         前置通知beforeAuth补充“异地登录，强制下线”功能  
  */
 
 @Aspect
@@ -51,9 +53,19 @@ public class AuthAspect {
 		ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 		HttpServletRequest request = attributes.getRequest();
 		
-		String username = redisService.getTokenValue(CookieUtil.getToken(request));
-		if(StringUtils.isEmpty(username)) {
-			throw new AuthException("用户越权访问");
+		String token = CookieUtil.getToken(request);
+		String userId = redisService.getLoginUser(token);
+		if(StringUtils.isEmpty(userId)) {
+			throw new AuthException(AuthEnum.LOGOUT);
+		}
+		
+		String redisToken = redisService.getToken(userId);
+		if(StringUtils.isEmpty(redisToken)) {
+			throw new AuthException(AuthEnum.LOGOUT);
+		}else if(!redisToken.equals(token)) {
+			//移除旧token对应的登录用户
+			redisService.removeLoginUser(token);
+			throw new AuthException(AuthEnum.OFFLINE);
 		}
 	}
 }
