@@ -6,13 +6,12 @@
 
 package com.lzc.demo.sys.user.service.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.lzc.demo.common.entity.User;
+import com.lzc.demo.sys.user.repository.UserRepository;
 import com.lzc.demo.sys.user.service.UserService;
 
 /**
@@ -31,15 +30,14 @@ import com.lzc.demo.sys.user.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	@Override
 	public User get(String username, String password) {
-		//FIXME 只作为简单的例子来用，不查询数据库
-		Map<String, User> userMap = new HashMap<>();
-		userMap.put("zc", new User("uid_0000000001", "zc", "zc123"));
-		userMap.put("admin", new User("uid_0000000002", "admin", "admin123"));
-		
-		User user = userMap.get(username);
+		//只作为简单的例子来用，数据库中的用户密码都没有加密
+		User user = userRepository.findByUsername(username);
 		if(user!=null && user.getPassword().equals(password)) {
 			return user;
 		}
@@ -51,11 +49,7 @@ public class UserServiceImpl implements UserService {
 		if(StringUtils.isEmpty(userId)) {
 			return null;
 		}
-		//FIXME 只作为简单的例子来用，不查询数据库
-		Map<String, User> userMap = new HashMap<>();
-		userMap.put("uid_0000000001", new User("uid_0000000001", "zc", "zc123"));
-		userMap.put("uid_0000000002", new User("uid_0000000002", "admin", "admin123"));
-		return userMap.get(userId);
+		return userRepository.findByUserId(userId);
 	}
 	
 }

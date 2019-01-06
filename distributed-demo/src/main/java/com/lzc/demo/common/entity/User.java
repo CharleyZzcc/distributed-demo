@@ -6,6 +6,9 @@
 
 package com.lzc.demo.common.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,8 +29,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 public class User {
 
+	@Id
 	private String userId;
 	
 	private String username;

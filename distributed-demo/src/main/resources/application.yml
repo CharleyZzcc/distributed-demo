@@ -6,7 +6,14 @@ server:
 spring:
   # redis 配置
   redis:
-    host: 192.168.102.128 
-    password: 
-#    host: 192.168.198.129
-#    password: 123456
+#    host: 192.168.102.128 
+#    password: 
+    host: 192.168.198.129
+    password: 123456
+    
+  # 数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/distributed?characterEncoding=utf-8&autoReconnect=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8

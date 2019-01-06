@@ -61,9 +61,11 @@ public class AuthAspect {
 		
 		String redisToken = redisService.getToken(userId);
 		if(StringUtils.isEmpty(redisToken)) {
+			//说明后登录的用户已注销，移除旧token对应的登录用户
+			redisService.removeLoginUser(token);
 			throw new AuthException(AuthEnum.LOGOUT);
 		}else if(!redisToken.equals(token)) {
-			//移除旧token对应的登录用户
+			//说明当前用户已被下线，移除旧token对应的登录用户
 			redisService.removeLoginUser(token);
 			throw new AuthException(AuthEnum.OFFLINE);
 		}
